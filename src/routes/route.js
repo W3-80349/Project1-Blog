@@ -4,6 +4,7 @@ const blogController = require('../Controller/blogController')
 const authorController = require('../Controller/authorController')
 const middle = require('../middleware/allMiddleware')
 
+
 router.post('/authors', authorController.createAuthor)
 
 router.post('/blogs', middle.authentication , blogController.createBlog)
@@ -17,5 +18,6 @@ router.put('/deleteblogs/:blogsId', middle.authentication, middle.deleteandUpdat
 router.put('/delete', middle.authentication, middle.deleteBlogbyParams,  blogController.deleteByParams)
 
 router.post('/login', authorController.loginUser )
+
 
 module.exports = router
