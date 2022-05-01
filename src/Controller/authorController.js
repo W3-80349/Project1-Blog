@@ -83,7 +83,7 @@ const loginUser = async function (req,res) {
         organisation: "FUnctionUp",
       },"functionup-uranium");
     // console.log(token)
-    res.setHeader("x-auth-token", token);
+    res.setHeader("x-api-key", token);
     res.send({ status: true, data: token });
   };
 

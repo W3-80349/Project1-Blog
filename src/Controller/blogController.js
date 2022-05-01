@@ -10,35 +10,35 @@ const createBlog = async function (req, res) {
     let { authorId, title, body, category} = req.body
 
     if (!title) {
-      res.status(401).send({ error: "Title is missing" })
+      res.status(401).send({ status:false,error: "Title is missing" })
     }
 
     if (title.length < 2) {
-      res.status(401).send({ error: "length of title must be greater than 2" })
+      res.status(401).send({status:false, error: "length of title must be greater than 2" })
     }
 
     if (!body) {
-      res.status(401).send({ error: "Body is missing" })
+      res.status(401).send({ status:false,error: "Body is missing" })
     }
 
     if (body.length < 50) {
-      res.status(401).send({ error: "length of body must be greater than 50" })
+      res.status(401).send({status:false, error: "length of body must be greater than 50" })
     }
 
     if (!category) {
       res.status(401).send({ error: "category is missing" })
     }
     if (!authorId) {
-      return res.status(401).send({ msg: 'please enter authorId' })
+      return res.status(401).send({status:false, msg: 'please enter authorId' })
     }
 
     let validId = await authorModel.findById(authorId)
     if (!validId) {
-      return res.status(401).send({ msg: 'authorId is not correct' })
+      return res.status(401).send({status:false, msg: 'authorId is not correct' })
     }
 
     let savedData = await blogModel.create(data)
-    res.status(201).send({ data: savedData })
+    res.status(201).send({staus:true, data: savedData })
   }
 
   catch (err) {
@@ -52,20 +52,19 @@ const getBlogs = async (req, res) => {
   try {
     let Data = req.query
     let { authorId, tags, category, subcategory } = req.query
-    console.log(req.query);
-   
-
-    let blog = await blogModel.find({
-      isPublished: true, isDeleted: false, $or: [{ authorId: authorId },
+    console.log(req.query)
+    
+    let blog = await blogModel.find({$or:
+      [{isPublished: true, isDeleted: false}, {$or: [{ authorId: authorId },
       { tags: tags },
       { category: category },
-      { subcategory: subcategory }]
-    })
+      { subcategory: subcategory }]}
+      ]})
     console.log(blog);
     if (!blog) {
-      res.status(404).send({ err: 'data not found' })
+      res.status(404).send({staus:true, msg: "Data not found!" })
     }
-    res.status(200).send({ msg: blog })
+    res.status(200).send({staus:true, data: blog })
   } catch (err) {
     console.log(err)
     res.status(500).send({ err: 'server not found' })
@@ -106,9 +105,9 @@ const updateBlog = async (req, res) => {
     )
     console.log(updatedBlog)
     if (!updatedBlog) {
-      res.status(404).send({ error: 'Document not found / already deleted' })
+      res.status(404).send({ staus:false, msg: 'error: Document not found / already deleted' })
     }
-    res.status(200).send({ Updates: updatedBlog })
+    res.status(200).send({status:true ,Updates: updatedBlog })
   } catch (err) {
     console.log(err)
     res.status(500).send({ msg: err.message })
@@ -131,9 +130,9 @@ const deleteBlog = async (req, res) => {
     if (!deletedDoc) {
       res
         .status(404)
-        .send({ error: 'Document not found with Given Id/ Already deleted' })
+        .send({ status:false,error: 'Document not found with Given Id/ Already deleted' })
     }
-    res.status(200).send({ Updates: deletedDoc })
+    res.status(200).send({ status:true, Data: deletedDoc })
   } catch (err) {
     console.log(err)
     res.status(500).send({ msg: err.message })
@@ -144,7 +143,7 @@ const deleteBlog = async (req, res) => {
 
 const deleteByParams = async (req, res) => {
   try {
-    let decodedToken = jwt.verify(req.headers["x-api=key" || "X-Api-Key"],"functionup-uranium")
+    let decodedToken = jwt.verify(req.headers["x-api-key" || "X-Api-Key"],"functionup-uranium")
 
     let { authorsId, isPublished, tags, category, subcategory } = req.query
 
@@ -167,13 +166,9 @@ const deleteByParams = async (req, res) => {
     if (!deletedDoc) {
       res
         .status(404)
-        .send({ error: 'Document not found / given data not exists/ is Already Deleted' })
+        .send({status:false, msg: 'Document not found / given data not exists/ is Already Deleted' })
     }
-    res.status(200).send({ Updates: deletedDoc })
-
-    const withTags = blogModel.findOneAndUpdate({ tags: { $contains: tags } }, { isDeleted: true, deletedAt: Date() }, { returnDocument: 'after' })
-
-    console.log(withTags);
+    res.status(200).send({status:true, Updates: deletedDoc })
   } catch (err) {
     console.log(err)
     res.status(500).send({ msg: err.message })

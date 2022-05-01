@@ -3,7 +3,7 @@ const blogModel = require("../models/blogModel")
 
 
 const authentication = async function (req, res, next) {
-    let token = req.headers["x-api=key" || "X-Api-Key"]
+    let token = req.headers["x-api-key" || "X-Api-Key"]
     if (!token) {
         res.status(401).send({ error: "no token found" })
     }
@@ -17,11 +17,11 @@ const authentication = async function (req, res, next) {
 }
 
 const deleteandUpdateBlogById=async(req,res,next)=>{
-    let token = req.headers["x-api=key" || "X-Api-Key"]
+    let token = req.headers["x-api-key" || "X-Api-Key"]
     let decodedToken = jwt.verify(token,"functionup-uranium")
     let Id = req.params.blogsId
     if(Id.length!=24){
-        res.status(401).send({ error: "invalid Id " })
+        res.status(401).send({ staus:false, error: "invalid Id " })
     }
     let blog = await blogModel.findById(Id)
     console.log(blog)
