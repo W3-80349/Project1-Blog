@@ -37,7 +37,7 @@ const deleteandUpdateBlogById=async(req,res,next)=>{
 
 
 const deleteBlogbyParams= async (req,res,next)=>{
-     let token = req.headers["x-api=key" || "X-Api-Key"]
+     let token = req.headers["x-api-key" || "X-Api-Key"]
      let decodedToken = jwt.verify(token,"functionup-uranium")
      let { authorId, isPublished, tags, category, subcategory } = req.query
      let blog = await blogModel.find({$or:[{authorId:authorId},{isPublished:isPublished},{tags:tags}, {category:category}, {subcategory:subcategory}]})
