@@ -4,7 +4,6 @@ const authorModel = require('../models/authorModel')
 
 const createBlog = async function (req, res) {
   try {
-    let data = req.body
    
     let { authorId, title, body, category} = req.body
 
@@ -12,16 +11,8 @@ const createBlog = async function (req, res) {
       return res.status(401).send({ status:false,error: "Title is missing" })
     }
 
-    if (title.length < 0) {
-      return res.status(401).send({status:false, error: "length of title must be greater than 2" })
-    }
-
     if (!body) {
       return res.status(401).send({ status:false,error: "Body is missing" })
-    }
-
-    if (body.length < 0) {
-      return res.status(401).send({status:false, error: "length of body must be greater than 50" })
     }
 
     if (!category) {
@@ -36,7 +27,7 @@ const createBlog = async function (req, res) {
       return res.status(401).send({status:false, msg: 'Author not found' })
     }
 
-    let savedData = await blogModel.create(data)
+    let savedData = await blogModel.create(req.body)
     return res.status(201).send({staus:true, data: savedData })
   }
 
@@ -49,7 +40,7 @@ const createBlog = async function (req, res) {
 
 const getBlogs = async (req, res) => {
   try {
-    let Data = req.query
+  
     let { authorId, tags, category, subcategory } = req.query
 
     

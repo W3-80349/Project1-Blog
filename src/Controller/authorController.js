@@ -5,37 +5,36 @@ var passwordValidator = require('password-validator')
 
 const createAuthor = async (req, res) => {
   try {
-    let data = req.body
     let {email, fname,lname,title,password} = req.body
-    var schema = new passwordValidator ()
-    schema.is().min(8).is().max(100).has().uppercase()
-    .has().lowercase().has().digits(2).has().not().spaces().is().not().oneOf(["Passw0rd", "Password123", "myPassword@123"])
-    const isPasswordValidate = schema.validate (password)
-    console.log(isPasswordValidate)
-
+ 
     if (!fname) {
       return res.status(401).send({error: "fname is missing"})
     }
-
+    
     if(!lname) {
       return res.status(401).send({error: "lname is missing"})
     }
-
-
+    
+    
     if(!title) {
       return res.status(401).send({error: "title is not present"})
     }
     if(!email) {
       return res.status(401).send({error: "Email is not present"})
     }
-
+    
     if(!(title == "Mrs" || title == "Mr" || title == "Miss")) {
       return res.status(401).send({error : "title has to be Mr or Mrs or Miss "})
     }
-
+    
     if(!password) {
       return res.status(401).send({error: "password is missing"})
     }
+    var schema = new passwordValidator ()
+    schema.is().min(8).is().max(100).has().uppercase()
+    .has().lowercase().has().digits(2).has().not().spaces().is().not().oneOf(["Passw0rd", "Password123", "myPassword@123"])
+    const isPasswordValidate = schema.validate (password)
+    console.log(isPasswordValidate)
     
     if (isPasswordValidate === false) {
       return res.status(401).send({error : "password isn't validate, please make sure length is minimum 8, should have one uppercase and lowercase character and Number also and donot use space and have a special character"})
@@ -54,7 +53,7 @@ const createAuthor = async (req, res) => {
       return res.status(401).send({error : "email already exists/ Not unique"})
     }
 
-    let savedData = await authorModel.create(data)
+    let savedData = await authorModel.create(req.body)
     if (!savedData) {
       return res.status(401).send({ msg: 'auther not created' })
     }
