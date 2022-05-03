@@ -3,19 +3,22 @@ const authorSchema = mongoose.Schema(
   {
     fname: {
       type: String,
+      trim:true,
       required: true,
     },
     lname: {
       type: String,
+      trim:true,
       required: true,
     },
     title: {
       type: String,
-      require: true,
+      require: 'Emailis required',
       enum: ['Mr', 'Mrs', 'Miss'],
     },
     email: {
       type: String,
+      trim:true,
       required: true,
     },
     password: { type: String, required: true },

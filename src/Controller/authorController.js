@@ -8,36 +8,37 @@ const createAuthor = async (req, res) => {
     let data = req.body
     let {email, fname,lname,title,password} = req.body
     var schema = new passwordValidator ()
-    schema.is().min(8).is().max(100).has().uppercase().has().lowercase().has().digits(2).has().not().spaces().is().not().oneOf(["Passw0rd", "Password123", "myPassword@123"])
+    schema.is().min(8).is().max(100).has().uppercase()
+    .has().lowercase().has().digits(2).has().not().spaces().is().not().oneOf(["Passw0rd", "Password123", "myPassword@123"])
     const isPasswordValidate = schema.validate (password)
     console.log(isPasswordValidate)
 
     if (!fname) {
-      res.status(401).send({error: "fname is missing"})
+      return res.status(401).send({error: "fname is missing"})
     }
 
     if(!lname) {
-      res.status(401).send({error: "lname is missing"})
+      return res.status(401).send({error: "lname is missing"})
     }
 
 
     if(!title) {
-      res.status(401).send({error: "title is not present"})
+      return res.status(401).send({error: "title is not present"})
     }
     if(!email) {
-      res.status(401).send({error: "Email is not present"})
+      return res.status(401).send({error: "Email is not present"})
     }
 
     if(!(title == "Mrs" || title == "Mr" || title == "Miss")) {
-             res.status(401).send({error : "title has to be Mr or Mrs or Miss "})
+      return res.status(401).send({error : "title has to be Mr or Mrs or Miss "})
     }
 
     if(!password) {
-      res.status(401).send({error: "password is missing"})
+      return res.status(401).send({error: "password is missing"})
     }
     
     if (isPasswordValidate === false) {
-      res.status(401).send({error : "password isn't validate, please make sure length is minimum 8, should have one uppercase and lowercase character and Number also and donot use space and have a special character"})
+      return res.status(401).send({error : "password isn't validate, please make sure length is minimum 8, should have one uppercase and lowercase character and Number also and donot use space and have a special character"})
     }
 
   // request me email ara h ki nahi check it out and send error agr email hi nahi h 
@@ -45,19 +46,19 @@ const createAuthor = async (req, res) => {
     console.log(email)
     let isValidEmail = await validator.validate(email)
     if (!isValidEmail){
-      res.status(401).send({error: "email is not valid"})
+      return res.status(401).send({error: "email is not valid"})
     }
     let isUniqueEmail = await authorModel.find({email:email })
     console.log(isUniqueEmail)
     if (isUniqueEmail[0]) {
-      res.status(401).send({error : "email already exists/ Not unique"})
+      return res.status(401).send({error : "email already exists/ Not unique"})
     }
 
     let savedData = await authorModel.create(data)
     if (!savedData) {
-      res.status(401).send({ msg: 'auther not created' })
+      return res.status(401).send({ msg: 'auther not created' })
     }
-    res.status(200).send({ msg: savedData })
+    return res.status(200).send({ msg: savedData })
   } catch (err) {
     console.log(err.message)
     res.status(500).send({ error: err.message })
@@ -66,6 +67,7 @@ const createAuthor = async (req, res) => {
 
 
 const loginUser = async function (req,res) {
+  try{
   let checkEmail = req.body.email
   let checkPassword = req.body.password
   
@@ -73,7 +75,7 @@ const loginUser = async function (req,res) {
   let user = await authorModel.findOne({ email: checkEmail, password: checkPassword });
  
   if(!user) {
-    res.status(404).send({error : "check your email or password"})
+    return res.status(404).send({error : "check your email or password"})
   }
 
     let token = jwt.sign(
@@ -83,9 +85,13 @@ const loginUser = async function (req,res) {
         organisation: "FUnctionUp",
       },"functionup-uranium");
     // console.log(token)
-    res.setHeader("x-api-key", token);
-    res.send({ status: true, data: token });
-  };
+   res.setHeader("x-api-key", token);
+    return res.send({ status: true, data: token });
+  }
+  catch(err){
+    res.status(500).send({ error: err.message })
+  }
+};
 
 
 module.exports.loginUser = loginUser

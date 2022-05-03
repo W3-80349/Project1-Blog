@@ -1,6 +1,5 @@
 const blogModel = require('../models/blogModel')
 const authorModel = require('../models/authorModel')
-const jwt   =require("jsonwebtoken")
 
 
 const createBlog = async function (req, res) {
@@ -10,23 +9,23 @@ const createBlog = async function (req, res) {
     let { authorId, title, body, category} = req.body
 
     if (!title) {
-      res.status(401).send({ status:false,error: "Title is missing" })
+      return res.status(401).send({ status:false,error: "Title is missing" })
     }
 
-    if (title.length < 2) {
-      res.status(401).send({status:false, error: "length of title must be greater than 2" })
+    if (title.length < 0) {
+      return res.status(401).send({status:false, error: "length of title must be greater than 2" })
     }
 
     if (!body) {
-      res.status(401).send({ status:false,error: "Body is missing" })
+      return res.status(401).send({ status:false,error: "Body is missing" })
     }
 
-    if (body.length < 50) {
-      res.status(401).send({status:false, error: "length of body must be greater than 50" })
+    if (body.length < 0) {
+      return res.status(401).send({status:false, error: "length of body must be greater than 50" })
     }
 
     if (!category) {
-      res.status(401).send({ error: "category is missing" })
+      return res.status(401).send({ error: "category is missing" })
     }
     if (!authorId) {
       return res.status(401).send({status:false, msg: 'please enter authorId' })
@@ -34,16 +33,16 @@ const createBlog = async function (req, res) {
 
     let validId = await authorModel.findById(authorId)
     if (!validId) {
-      return res.status(401).send({status:false, msg: 'authorId is not correct' })
+      return res.status(401).send({status:false, msg: 'Author not found' })
     }
 
     let savedData = await blogModel.create(data)
-    res.status(201).send({staus:true, data: savedData })
+    return res.status(201).send({staus:true, data: savedData })
   }
 
   catch (err) {
     console.log(err)
-    res.status(500).send({ err: err.message })
+    return res.status(500).send({ err: err.message })
   }
 }
 
@@ -52,7 +51,7 @@ const getBlogs = async (req, res) => {
   try {
     let Data = req.query
     let { authorId, tags, category, subcategory } = req.query
-    console.log(req.query)
+
     
     let blog = await blogModel.find({$or:
       [{isPublished: true, isDeleted: false}, {$or: [{ authorId: authorId },
@@ -62,9 +61,9 @@ const getBlogs = async (req, res) => {
       ]})
     console.log(blog);
     if (!blog) {
-      res.status(404).send({staus:true, msg: "Data not found!" })
+      return res.status(404).send({staus:true, msg: "Data not found!" })
     }
-    res.status(200).send({staus:true, data: blog })
+    return res.status(200).send({staus:true, data: blog })
   } catch (err) {
     console.log(err)
     res.status(500).send({ err: 'server not found' })
@@ -74,40 +73,43 @@ const getBlogs = async (req, res) => {
 
 const updateBlog = async (req, res) => {
   try {
-  
-    let data = req.body
+    let {tags, subcategory, category, body, isPublished} = req.body
     let Id = req.params.blogsId
-    let tags = req.body.tags
-    let subcategory = req.body.subcategory
-    let user = await blogModel.findById(Id)
-    let updatedTags = user.tags
+   
+    let blog = await blogModel.findById(Id)
+
+    if(!blog){
+      return res.send({status:404, msg:"Blog not found"})
+    }
+
+    let updatedTags = blog.tags
     if (tags) {
       updatedTags.push(tags)
     }
     // updatedTags.push(tags)
-    let updatedSubCategory = user.subcategory
+    let updatedSubCategory = blog.subcategory
     if (subcategory) {
       updatedSubCategory.push(subcategory)
     }
     // updatedSubCategory.push(subcategory)
-    console.log(data)
 
     let updatedBlog = await blogModel.findOneAndUpdate(
       { _id: Id  , isDeleted:false},
       {
-        title: data.title,
+        category: category,
         tags: updatedTags,  
         subcategory: updatedSubCategory, 
-        body: data.body,
-        isPublished:data.isPublished
+        body: body,
+        isPublished:isPublished,
+
       },
       { returnDocument: 'after' },
     )
     console.log(updatedBlog)
     if (!updatedBlog) {
-      res.status(404).send({ staus:false, msg: 'error: Document not found / already deleted' })
+      return res.status(404).send({ staus:false, msg: 'error: Document not found / already deleted' })
     }
-    res.status(200).send({status:true ,Updates: updatedBlog })
+    return res.status(200).send({status:true ,Updates: updatedBlog })
   } catch (err) {
     console.log(err)
     res.status(500).send({ msg: err.message })
@@ -128,7 +130,7 @@ const deleteBlog = async (req, res) => {
     )
     console.log(deletedDoc)
     if (!deletedDoc) {
-      res
+      return res
         .status(404)
         .send({ status:false,error: 'Document not found with Given Id/ Already deleted' })
     }
@@ -143,9 +145,7 @@ const deleteBlog = async (req, res) => {
 
 const deleteByParams = async (req, res) => {
   try {
-    let decodedToken = jwt.verify(req.headers["x-api-key" || "X-Api-Key"],"functionup-uranium")
-
-    let { authorsId, isPublished, tags, category, subcategory } = req.query
+    let { authorId, isPublished, tags, category, subcategory } = req.query
 
 
     if (!req.query) {
@@ -155,14 +155,13 @@ const deleteByParams = async (req, res) => {
     }
 
     let deletedDoc = await blogModel.updateMany({
-      isDeleted: false, authorId: decodedToken.userId,$or: [
+      isDeleted: false, $or: [{authorId:authorId},
       { isPublished: isPublished },
       { tags: tags },
       { category: category },
       { subcategory: subcategory }],
     },
       { isDeleted: true, deletedAt: Date()}, { returnDocument: 'after' })
-    console.log(deletedDoc)
     if (!deletedDoc) {
       res
         .status(404)
