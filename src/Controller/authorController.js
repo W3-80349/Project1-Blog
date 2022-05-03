@@ -40,8 +40,6 @@ const createAuthor = async (req, res) => {
       return res.status(401).send({error : "password isn't validate, please make sure length is minimum 8, should have one uppercase and lowercase character and Number also and donot use space and have a special character"})
     }
 
-  // request me email ara h ki nahi check it out and send error agr email hi nahi h 
-
     console.log(email)
     let isValidEmail = await validator.validate(email)
     if (!isValidEmail){
